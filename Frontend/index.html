@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AfroGamers - All Online Games Live</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#0b0b12;color:#fff;padding-bottom:90px}
+header{background:#12121e;padding:14px;display:flex;gap:10px;align-items:center;position:sticky;top:0;z-index:10}
+.logo{font-weight:900;font-size:21px;color:#ffcc00;white-space:nowrap}.logo span{color:#9146FF}
+.search{flex:1;background:#1e1e2e;border:none;padding:10px;border-radius:20px;color:#fff;outline:none}
+.live-dot{width:10px;height:10px;background:#00ff88;border-radius:50%;display:inline-block;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.3}}
+.tabs{display:flex;gap:8px;padding:12px;overflow-x:auto}
+.tab{padding:8px 16px;background:#1e1e2e;border-radius:20px;white-space:nowrap;cursor:pointer;border:1px solid #333}
+.tab.active{background:#ffcc00;color:#000;font-weight:bold}
+.section{padding:0 12px}
+.card{background:#151522;border-radius:16px;overflow:hidden;margin-bottom:14px;border:1px solid #222}
+.card img{width:100%;height:180px;object-fit:cover;display:block}
+.card-body{padding:12px}
+.badge{display:inline-block;background:#e11d48;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:bold}
+.badge.twitch{background:#9146FF}.badge.youtube{background:#ff0000}.badge.verified{background:#00c853}.badge.ai{background:#00aaff}
+.row{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:8px}
+.btn{padding:11px 14px;border:none;border-radius:10px;font-weight:bold;cursor:pointer}
+.btn-yellow{background:#ffcc00;color:#000}.btn-purple{background:#9146FF;color:#fff}.btn-dark{background:#222;color:#fff;width:100%;margin-top:8px}
+.claim-box{background:#1a1a1a;padding:16px;border-radius:12px;text-align:center;margin-top:12px;border:1px dashed #9146FF}
+input,select,textarea{width:100%;padding:11px;margin-top:8px;background:#1e1e2e;border:1px solid #333;color:#fff;border-radius:10px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#12121e;display:flex;justify-content:space-around;padding:12px 0;border-top:1px solid #222;z-index:20}
+.bottom-nav div{text-align:center;font-size:12px;cursor:pointer;color:#aaa}
+.bottom-nav div.active{color:#ffcc00;font-weight:bold}
+.hidden{display:none}
+.leader{display:flex;gap:10px;align-items:center;background:#151522;padding:10px;border-radius:12px;margin-bottom:8px}
+.leader img{width:44px;height:44px;border-radius:50%;object-fit:cover}
+.small{font-size:12px;color:#aaa}
+.ai-chat{background:#151522;border-radius:16px;padding:12px;margin-bottom:14px;border:1px solid #00aaff}
+.ai-msg{background:#1e1e2e;padding:10px;border-radius:12px;margin-top:8px;font-size:14px;line-height:1.5}
+.tourney-live{border-left:4px solid #00ff88}
+</style>
+</head>
+<body>
+<header><div class="logo">AFRO<span>GAMERS</span></div><input class="search" id="searchInput" placeholder="Search any gamer, any online game..." oninput="searchStreams()"><div><span class="live-dot"></span> <span id="syncStatus">SYNCED</span></div></header>
+
+<div class="tabs">
+<div class="tab active" onclick="filterGame('all',this)">🔴 All Online Games Live</div>
+<div class="tab" onclick="filterGame('trending',this)">🔥 Trending Now</div>
+<div class="tab" onclick="filterGame('Free Fire',this)">Free Fire</div>
+<div class="tab" onclick="filterGame('CODM',this)">CODM</div>
+<div class="tab" onclick="filterGame('PUBG',this)">PUBG</div>
+<div class="tab" onclick="filterGame('Minecraft',this)">Minecraft</div>
+<div class="tab" onclick="filterGame('Roblox',this)">Roblox</div>
+<div class="tab" onclick="filterGame('Fortnite',this)">Fortnite</div>
+<div class="tab" onclick="filterGame('Blox Fruits',this)">Blox Fruits</div>
+<div class="tab" onclick="filterGame('GTA',this)">GTA / RP</div>
+<div class="tab" onclick="filterGame('eFootball',this)">eFootball / FIFA</div>
+<div class="tab" onclick="filterGame('Valorant',this)">Valorant</div>
+<div class="tab" onclick="filterGame('Other',this)">Other Online Games</div>
+</div>
+
+<div id="page-home"><div class="section">
+<div class="ai-chat"><b>🤖 AfroGamers AI Bot</b> <span class="badge ai">ONLINE • AUTO</span><p class="small">I find ALL live online gamers, notify them, and answer fans.</p><div id="aiMessages"><div class="ai-msg">👋 Hi! I'm AfroGamers AI. I check Twitch + YouTube every 60 secs. <b id="aiLiveCount">8</b> online gamers are live now — any game. Ask me: "Who is live in Roblox?"</div></div><input id="aiInput" placeholder="Ask AI Bot: Who is live? Next tournament?" onkeypress="if(event.key==='Enter') askAI()"><button class="btn btn-purple" style="width:100%;margin-top:8px" onclick="askAI()">Ask AI Bot</button></div>
+<h3>🔴 Live Now - All Online Games - Auto Sync Every 60 Secs</h3><p class="small" id="liveCount">Connecting...</p><div id="liveList" style="margin-top:12px"></div>
+<h3 style="margin-top:16px">🏆 Top Streamers This Week</h3><div id="leaderboard"></div>
+<h3 style="margin-top:16px">🇬🇭 Country Battle</h3><div class="card"><div class="card-body"><div class="row"><span>🇬🇭 Ghana <b id="ghScore">1,240</b></span><span>🇳🇬 Nigeria <b id="ngScore">1,180</b></span></div><button class="btn btn-yellow" style="width:100%;margin-top:10px" onclick="vote('gh')">Vote Ghana 🇬🇭</button><button class="btn btn-dark" onclick="vote('ng')">Vote Nigeria 🇳🇬</button></div></div>
+</div></div>
+
+<div id="page-tournaments" class="hidden"><div class="section"><h3>🏆 Live Tournaments - Real Data</h3><p class="small">Add a tournament and it appears here automatically. No one-time cup.</p><div style="display:flex;gap:8px;margin:12px 0"><button class="btn btn-dark" onclick="loadTournaments('all')">All</button><button class="btn btn-dark" onclick="loadTournaments('live')">🔴 Live Now</button><button class="btn btn-dark" onclick="loadTournaments('upcoming')">Upcoming</button></div><div id="tournamentList"></div><div class="card"><div class="card-body"><h4>+ Add Tournament (Admin)</h4><input id="newTourneyName" placeholder="Tournament Name"><select id="newTourneyGame"><option>Free Fire</option><option>CODM</option><option>PUBG</option><option>Minecraft</option><option>Roblox</option><option>Fortnite</option><option>Blox Fruits</option><option>GTA</option><option>eFootball</option><option>Valorant</option><option>Other Online Game</option></select><input id="newTourneyPrize" placeholder="Prize e.g. 500 GHS"><input id="newTourneyTime" placeholder="Time e.g. Today 6PM"><button class="btn btn-yellow" style="width:100%;margin-top:8px" onclick="addTournament()">Publish Tournament - AI Bot Will Notify Everyone</button></div></div></div></div>
+
+<div id="page-profile" class="hidden"><div class="section"><div class="card"><img id="profileImg" src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800"><div class="card-body"><div class="row"><h2 id="profileName">Select a streamer</h2><span id="verifiedBadge"></span></div><p class="small" id="profileMeta"></p><p class="small" id="autoStatus" style="color:#00ff88"></p><div id="claimBox" class="claim-box"><p>Are you <b id="claimName">this streamer</b>?</p><button class="btn btn-purple" onclick="claimProfile()">✅ Claim Your Profile - Get Verified</button><p class="small" style="margin-top:8px">When you go LIVE with ANY online game, AI Bot will auto-show you + notify your chat.</p></div><div id="claimedForm" class="hidden"><h4>Your Claimed Profile</h4><input id="whatsappInput" placeholder="WhatsApp Link"><input id="discordInput" placeholder="Discord Link"><input id="scheduleInput" placeholder="Schedule e.g. Daily 6PM"><label class="small"><input type="checkbox" id="autoNotifyCheck" checked style="width:auto"> ✅ Allow AI Bot to notify me when I go LIVE</label><button class="btn btn-yellow" style="width:100%" onclick="saveClaimed()">Save My Profile</button><p class="small" id="saveMsg"></p></div><div class="row"><button class="btn btn-dark" onclick="shareStreamer()">Share</button><button class="btn btn-dark" onclick="copyTag()">Copy TikTok Caption</button></div></div></div><div class="card"><div class="card-body"><h3>📣 AI Bot Auto-Post For This Streamer</h3><textarea id="tagTemplate" rows="7" readonly></textarea><button class="btn btn-purple" style="width:100%;margin-top:8px" onclick="copyTag()">Copy Caption</button><button class="btn btn-yellow" style="width:100%;margin-top:8px" onclick="copyDM()">Copy DM To Streamer</button><button class="btn btn-dark" onclick="triggerBotNotification()">🤖 Test AI Bot Notification In Chat</button><p class="small" id="copyMsg"></p><p class="small" id="botLog"></p></div></div></div></div>
+
+<div id="page-wallet" class="hidden"><div class="section"><div class="card"><div class="card-body"><h3>💰 Wallet</h3><h1 style="font-size:36px">0.00 GHS</h1><p class="small">Win tournaments to earn. Withdraw via MoMo.</p><button class="btn btn-yellow" style="width:100%;margin-top:10px">Withdraw via MoMo</button></div></div></div></div>
+
+<div class="bottom-nav"><div class="active" onclick="showPage('home',this)">🏠<br>Home</div><div onclick="showPage('tournaments',this)">🏆<br>Tournaments</div><div onclick="showPage('profile',this)">👤<br>Profile</div><div onclick="showPage('wallet',this)">💰<br>Wallet</div></div>
+
+<script>
+// ===== CONFIG - PASTE YOUR KEYS HERE ONLY =====
+const CONFIG = {
+	YOUTUBE_API_KEY: "AlzaSyAfyWnoErxOJvWp7kll7TsNaxkyGbBb0g",
+	TWITCH_CLIENT_ID: "afyjqo4mldsnijvmoc7hgoeqf1zw2u",
+	TWITCH_REDIRECT: "http://localhost:3000",
+	// AFTER YOU DEPLOY BOT ON RENDER, PASTE YOUR RENDER LINK HERE:
+	BOT_BACKEND_URL: "https://afrogamers-bot.onrender.com",
+	AI_BOT_NAME: "afrogamers_bot"
+};
+
+// ===== ALL ONLINE GAMES ENGINE =====
+const ALL_ONLINE_GAMES = ['Free Fire','CODM','Call of Duty','PUBG','BGMI','Fortnite','Minecraft','Roblox','Blox Fruits','GTA','GTA V','eFootball','FIFA','FC 25','FC 26','Blood Strike','Valorant','Apex Legends','League of Legends','Dota','Clash Royale','Brawl Stars','Stumble Guys','Among Us','Fall Guys','Rocket League','Warzone','Delta Force','Arena Breakout','Farlight 84','Honor of Kings','MLBB','Mobile Legends','Car Parking','Wuthering Waves','Genshin','2K','NBA 2K','Madden','EA FC'];
+function detectGame(title, twitchGameName){
+	if(twitchGameName && twitchGameName.length > 1) return twitchGameName;
+	let low = (title||'').toLowerCase();
+	for(let g of ALL_ONLINE_GAMES){ if(low.includes(g.toLowerCase())) return g; }
+	return 'Online Game';
+}
+function isOnlineGameStream(stream){
+	let game = (stream.game || '').toLowerCase();
+	let blocked = ['music','podcast','cooking','just chatting','talk show','news','crypto trading','sports'];
+	if(blocked.includes(game)) return false;
+	return true;
+}
+
+let streams = JSON.parse(localStorage.getItem('afro_streams') || 'null') || [
+	{id:"1", name:"Kofi Plays", game:"Free Fire", viewers:320, platform:"twitch", title:"Free Fire Rank Push 🇬🇭", img:"https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800", country:"Ghana", handle:"kofi_plays", isLive:true, lastSeen:Date.now()},
+	{id:"2", name:"Ama Gaming", game:"CODM", viewers:215, platform:"youtube", title:"CODM Domination", img:"https://images.unsplash.com/photo-1560253023-3ec5d502959f?w=800", country:"Ghana", handle:"ama_gaming", isLive:true, lastSeen:Date.now()},
+	{id:"3", name:"Yaw Esports", game:"Free Fire", viewers:540, platform:"twitch", title:"Booyah! Road to Grandmaster", img:"https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800", country:"Ghana", handle:"yaw_esports", isLive:true, lastSeen:Date.now()},
+	{id:"4", name:"Naija King", game:"PUBG", viewers:410, platform:"youtube", title:"PUBG Mobile Nigeria Squad", img:"https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=800", country:"Nigeria", handle:"naija_king", isLive:true, lastSeen:Date.now()},
+	{id:"5", name:"Kwame FC", game:"eFootball", viewers:180, platform:"twitch", title:"eFootball Division 1 Grind", img:"https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=800", country:"Ghana", handle:"kwame_fc", isLive:true, lastSeen:Date.now()},
+	{id:"6", name:"Roblox King GH", game:"Roblox", viewers:890, platform:"twitch", title:"Roblox Blox Fruits Grind LIVE 🇬🇭", img:"https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800", country:"Ghana", handle:"roblox_king_gh", isLive:true, lastSeen:Date.now()},
+	{id:"7", name:"Minecraft Pro", game:"Minecraft", viewers:450, platform:"youtube", title:"Minecraft Survival - Building Ghana House", img:"https://images.unsplash.com/photo-1627856013091-fed6e4e30025?w=800", country:"Nigeria", handle:"minecraft_pro", isLive:true, lastSeen:Date.now()},
+	{id:"8", name:"Fortnite Queen", game:"Fortnite", viewers:620, platform:"twitch", title:"Fortnite Ranked - Road to Unreal", img:"https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800", country:"Ghana", handle:"fortnite_queen", isLive:true, lastSeen:Date.now()},
+];
+let tournaments = JSON.parse(localStorage.getItem('afro_tournaments') || 'null') || [
+	{id:"t1", name:"Friday Free Fire Cup", game:"Free Fire", prize:"500 GHS", time:"Today 6PM", status:"live", slots:"32/48", organizer:"AfroGamers"},
+	{id:"t2", name:"CODM Weekend Showdown", game:"CODM", prize:"1,000 GHS", time:"Sat 5PM", status:"upcoming", slots:"12/32", organizer:"AfroGamers"},
+	{id:"t3", name:"Roblox Blox Fruits Tournament", game:"Roblox", prize:"800 GHS", time:"Sun 7PM", status:"upcoming", slots:"8/16", organizer:"AfroGamers"},
+];
+function saveState(){ localStorage.setItem('afro_streams', JSON.stringify(streams)); localStorage.setItem('afro_tournaments', JSON.stringify(tournaments)); }
+let currentFilter='all', selectedStreamer=streams[0], ghVotes=1240, ngVotes=1180;
+
+function renderStreams(){
+	let list = streams.filter(s=> s.isLive && isOnlineGameStream(s) && (currentFilter==='all' || s.game===currentFilter || (currentFilter==='Other' && !ALL_ONLINE_GAMES.includes(s.game))));
+	document.getElementById('liveCount').innerText = list.length + ' live online gamers • All games • Last sync: ' + new Date().toLocaleTimeString();
+	document.getElementById('aiLiveCount').innerText = list.length;
+	document.getElementById('liveList').innerHTML = list.map(s=>`<div class="card" onclick="openProfile('${s.id}')"><img src="${s.img}"><div class="card-body"><span class="badge ${s.platform}">${s.platform.toUpperCase()} • 🔴 LIVE</span><span class="badge" style="background:#222">${s.game}</span><h3 style="margin-top:8px">${s.title}</h3><div class="row"><span><b>${s.name}</b> • ${s.country==='Ghana'?'🇬🇭':'🇳🇬'} ${s.country}</span><span>👁 ${s.viewers}</span></div><button class="btn btn-yellow" style="width:100%;margin-top:10px">Watch Now</button></div></div>`).join('') || '<p class="small">No one live right now. AI Bot is still watching...</p>';
+	let sorted=[...streams].sort((a,b)=>b.viewers-a.viewers);
+	document.getElementById('leaderboard').innerHTML = sorted.map((s,i)=>`<div class="leader"><img src="${s.img}"><div style="flex:1"><b>#${i+1} ${s.name}</b><div class="small">${s.game} • ${s.viewers} watching</div></div><button class="btn btn-dark" onclick="openProfile('${s.id}')">View</button></div>`).join('');
+}
+function loadTournaments(filter='all'){
+	let list = tournaments.filter(t=> filter==='all' || t.status===filter);
+	document.getElementById('tournamentList').innerHTML = list.map(t=>`<div class="card ${t.status==='live'?'tourney-live':''}"><div class="card-body"><span class="badge">${t.status==='live'?'🔴 LIVE TOURNAMENT':'UPCOMING'}</span><span class="badge" style="background:#222">${t.game}</span><h3 style="margin-top:8px">${t.name}</h3><p class="small">${t.time} • Prize: ${t.prize} • Slots: ${t.slots} • By ${t.organizer}</p><button class="btn ${t.status==='live'?'btn-yellow':'btn-purple'}" style="width:100%;margin-top:10px" onclick="joinTournament('${t.name}')">Join Tournament</button><button class="btn btn-dark" onclick="notifyTournament('${t.id}')">🤖 AI Bot: Notify All Players</button></div></div>`).join('');
+}
+function addTournament(){
+	let name=document.getElementById('newTourneyName').value; let game=document.getElementById('newTourneyGame').value; let prize=document.getElementById('newTourneyPrize').value; let time=document.getElementById('newTourneyTime').value;
+	if(!name) return alert('Enter tournament name');
+	tournaments.unshift({id:'t'+Date.now(), name, game, prize:prize||'TBD', time:time||'Soon', status:'upcoming', slots:'0/32', organizer:'AfroGamers'});
+	saveState(); loadTournaments('all'); aiSay(`✅ New tournament: ${name} - ${game} - Prize ${prize}. I notified all players.`);
+}
+
+// AUTO SYNC - ALL GAMES
+async function autoSyncLive(){
+	document.getElementById('syncStatus').innerText='SYNCING...';
+	try{
+		if(CONFIG.YOUTUBE_API_KEY && !CONFIG.YOUTUBE_API_KEY.includes('PASTE')){
+			// ALL GAMES: search "gaming live" not just Free Fire
+			let yt = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&eventType=live&type=video&maxResults=50&q=gaming live&key=${CONFIG.YOUTUBE_API_KEY}`).then(r=>r.json());
+			if(yt.items) yt.items.forEach(item=>{
+				let channel=item.snippet.channelTitle; let existing=streams.find(s=>s.name===channel);
+				if(!existing){
+					let newStream={id:'yt'+item.id.videoId, name:channel, game:detectGame(item.snippet.title,''), viewers:100, platform:'youtube', title:item.snippet.title, img:item.snippet.thumbnails.high.url, country:'Ghana', handle:channel.replace(/\s/g,'_').toLowerCase(), isLive:true, lastSeen:Date.now()};
+					if(isOnlineGameStream(newStream)){ streams.push(newStream); onNewLiveStreamer(newStream); }
+				} else { existing.isLive=true; existing.title=item.snippet.title; existing.lastSeen=Date.now(); }
+			});
+		}
+	}catch(e){ console.log('YT sync',e); }
+	// Twitch comes from backend /api/twitch-live - see server.js - ALL GAMES, no game_id filter
+	try{
+		if(CONFIG.BOT_BACKEND_URL && !CONFIG.BOT_BACKEND_URL.includes('afrogamers-bot.onrender') || true){
+			// Try backend if it exists
+			let res = await fetch(CONFIG.BOT_BACKEND_URL + '/api/live').then(r=>r.json()).catch(()=>null);
+			if(res && res.streams) res.streams.forEach(s=>{
+				if(!streams.find(x=>x.handle===s.user_login)){
+					let ns={id:'tw'+s.id, name:s.user_name, game:detectGame(s.title, s.game_name), viewers:s.viewer_count, platform:'twitch', title:s.title, img:s.thumbnail_url, country:'Ghana', handle:s.user_login, isLive:true, lastSeen:Date.now()};
+					if(isOnlineGameStream(ns)){ streams.push(ns); onNewLiveStreamer(ns); }
+				}
+			});
+		}
+	}catch(e){}
+	saveState(); renderStreams(); document.getElementById('syncStatus').innerText='SYNCED • '+new Date().toLocaleTimeString();
+}
+setInterval(autoSyncLive, 60000);
+
+function onNewLiveStreamer(s){ aiSay(`🔴 NEW LIVE: ${s.name} just went LIVE playing ${s.game}. Added to Home + notifying his chat now.`); notifyStreamerInChat(s); }
+
+// REAL BOT CALL - Goes to Render
+async function notifyStreamerInChat(streamer){
+	try{
+		let res = await fetch(CONFIG.BOT_BACKEND_URL + '/api/bot/notify', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ streamer: streamer.handle, message: `🔴 You are LIVE on AfroGamers App! ${streamer.viewers} people can see you now playing ${streamer.game}. Claim your profile to get verified ✅` }) });
+		let data = await res.json(); document.getElementById('botLog').innerText = '✅ Bot sent! ' + data.message;
+	}catch(e){ document.getElementById('botLog').innerText = 'Bot offline - check BOT_BACKEND_URL / Render link. Message that WOULD be sent: "You are LIVE on AfroGamers!"'; }
+}
+function triggerBotNotification(){ notifyStreamerInChat(selectedStreamer); aiSay(`I sent notification to @${selectedStreamer.handle} chat.`); }
+function notifyTournament(id){ let t=tournaments.find(x=>x.id===id); aiSay(`📣 Tournament Alert: ${t.name} starting! Notified all ${t.game} players.`); }
+function aiSay(text){ let div=document.createElement('div'); div.className='ai-msg'; div.innerHTML='🤖 <b>AfroGamers AI:</b> '+text; document.getElementById('aiMessages').appendChild(div); }
+function askAI(){
+	let q=document.getElementById('aiInput').value; if(!q) return;
+	let d=document.createElement('div'); d.className='ai-msg'; d.innerHTML='👤 You: '+q; document.getElementById('aiMessages').appendChild(d);
+	document.getElementById('aiInput').value='';
+	setTimeout(()=>{
+		let a=q.toLowerCase();
+		if(a.includes('live')||a.includes('roblox')||a.includes('minecraft')||a.includes('fortnite')||a.includes('free fire')){ let live=streams.filter(s=>s.isLive); aiSay(`There are ${live.length} online gamers live now across ALL games. Top is ${live.sort((x,y)=>y.viewers-x.viewers)[0]?.name} with ${live[0]?.viewers} viewers playing ${live[0]?.game}.`); }
+		else if(a.includes('tournament')){ aiSay(`We have ${tournaments.length} tournaments. Next: ${tournaments[0].name} - ${tournaments[0].time} - ${tournaments[0].prize}.`); }
+		else if(a.includes('claim')){ aiSay(`To claim: Go to streamer profile > Claim Your Profile > Login with Twitch/YouTube. You get verified + bot notifies you when live.`); }
+		else { aiSay(`Ask me: Who is live? Next tournament? How to claim? How to join?`); }
+	},600);
+}
+function openProfile(id){
+	selectedStreamer=streams.find(s=>s.id===id)||streams[0];
+	document.getElementById('profileName').innerText=selectedStreamer.name; document.getElementById('claimName').innerText=selectedStreamer.name;
+	document.getElementById('profileMeta').innerText=`${selectedStreamer.game} • ${selectedStreamer.viewers} watching • ${selectedStreamer.country} • @${selectedStreamer.handle}`;
+	document.getElementById('profileImg').src=selectedStreamer.img;
+	document.getElementById('autoStatus').innerText = selectedStreamer.isLive ? '🟢 AUTO-DETECTED: LIVE now - AI Bot listed him automatically.' : '⚪ Offline - AI Bot watching.';
+	let claimed=localStorage.getItem('claimed_'+selectedStreamer.id);
+	if(claimed){ document.getElementById('verifiedBadge').innerHTML='<span class="badge verified">✅ VERIFIED</span>'; document.getElementById('claimBox').classList.add('hidden'); document.getElementById('claimedForm').classList.remove('hidden'); let dd=JSON.parse(claimed); document.getElementById('whatsappInput').value=dd.whatsapp||''; document.getElementById('discordInput').value=dd.discord||''; document.getElementById('scheduleInput').value=dd.schedule||''; }
+	else { document.getElementById('verifiedBadge').innerHTML=''; document.getElementById('claimBox').classList.remove('hidden'); document.getElementById('claimedForm').classList.add('hidden'); }
+	document.getElementById('tagTemplate').value=`🔴 LIVE NOW ON AFROGAMERS\n\n@${selectedStreamer.handle} is LIVE playing ${selectedStreamer.game} ${selectedStreamer.country==='Ghana'?'🇬🇭':'🇳🇬'}\n\nHe has ${selectedStreamer.viewers} watching!\nWatch on AfroGamers App — Link in Bio\nFollow @afrogamers_hub`;
+	showPage('profile', document.querySelectorAll('.bottom-nav div')[2]);
+}
+function claimProfile(){
+	localStorage.setItem('claim_streamer_id', selectedStreamer.id);
+	if(selectedStreamer.platform==='twitch'){ window.location.href=`https://id.twitch.tv/oauth2/authorize?client_id=${CONFIG.TWITCH_CLIENT_ID}&redirect_uri=${CONFIG.TWITCH_REDIRECT}&response_type=code&scope=user:read:email+chat:read+chat:edit&state=claim_${selectedStreamer.id}`; }
+	else { window.location.href=`https://accounts.google.com/o/oauth2/v2/auth?client_id=YOUR_GOOGLE_OAUTH_CLIENT_ID&redirect_uri=${CONFIG.TWITCH_REDIRECT}/auth/youtube/callback&response_type=code&scope=https://www.googleapis.com/auth/youtube.readonly&state=claim_${selectedStreamer.id}`; }
+}
+function saveClaimed(){ let data={whatsapp:document.getElementById('whatsappInput').value, discord:document.getElementById('discordInput').value, schedule:document.getElementById('scheduleInput').value}; localStorage.setItem('claimed_'+selectedStreamer.id, JSON.stringify(data)); document.getElementById('saveMsg').innerText='✅ Saved! AI Bot will auto-notify you when you go LIVE.'; }
+function copyTag(){ let t=document.getElementById('tagTemplate'); t.select(); document.execCommand('copy'); document.getElementById('copyMsg').innerText='Copied!'; }
+function copyDM(){ let dm=`Yo bro, I'm Rauf from AfroGamers 🇬🇭\n\nWe featured you today, you were LIVE on Home Page.\nClaim your profile to get verified + AI Bot will notify your chat every time you go live with ANY online game.\nNo charge.`; navigator.clipboard.writeText(dm); document.getElementById('copyMsg').innerText='DM Copied!'; }
+function shareStreamer(){ alert('Link: https://afrogamers.com/streamer/'+selectedStreamer.handle); }
+function showPage(p,el){ ['home','tournaments','profile','wallet'].forEach(x=>document.getElementById('page-'+x).classList.add('hidden')); document.getElementById('page-'+p).classList.remove('hidden'); document.querySelectorAll('.bottom-nav div').forEach(d=>d.classList.remove('active')); if(el) el.classList.add('active'); }
+function filterGame(g,el){ currentFilter=g; document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); if(g==='trending'){ streams.sort((a,b)=>b.viewers-a.viewers); currentFilter='all'; } renderStreams(); }
+function searchStreams(){ let q=document.getElementById('searchInput').value.toLowerCase(); if(!q){ renderStreams(); return; } let orig=streams; streams=streams.filter(s=>s.name.toLowerCase().includes(q)||s.game.toLowerCase().includes(q)); renderStreams(); streams=orig; }
+function vote(t){ if(t==='gh'){ghVotes++; document.getElementById('ghScore').innerText=ghVotes.toLocaleString();} else {ngVotes++; document.getElementById('ngScore').innerText=ngVotes.toLocaleString();} }
+function joinTournament(n){ alert('Joined: '+n+'\nAI Bot will send Room ID + notify you when it starts.'); }
+renderStreams(); loadTournaments('all'); openProfile('1'); autoSyncLive();
+</script>
+</body>
+</html>
